@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  rejected
+}
+
+enum Role {
+  Employee
+  HR
+}
+
+model Employee {
+  id            Int            @id @default(autoincrement())
+  name          String
+  department    String
+  email         String         @unique
+  password      String         @default("")
+  role          Role           @default(Employee)
+  leaveRequests LeaveRequest[]
+
+  @@map("employees")
+}
+
+model LeaveRequest {
+  id         Int         @id @default(autoincrement())
+  employeeId Int         @map("employee_id")
+  leaveType  String      @map("leave_type")
+  fromDate   DateTime    @map("from_date")
+  toDate     DateTime    @map("to_date")
+  status     LeaveStatus @default(pending)
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId])
+  @@map("leave_requests")
+}
